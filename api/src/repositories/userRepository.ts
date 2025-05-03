@@ -1,6 +1,5 @@
-import { randomUUID } from "crypto";
-import User, { IUser } from "../models/user";
 import { FindOptions } from "../libs/findOptions";
+import User, { IUser } from "../models/user";
 
 export async function getUsers({
   search,
@@ -26,7 +25,6 @@ export async function getUsers({
 }
 
 export async function createUser(input: IUser): Promise<IUser> {
-  input.uid = randomUUID();
   input.created = new Date();
   input.updated = input.created;
   const newUser = await User.create(input);

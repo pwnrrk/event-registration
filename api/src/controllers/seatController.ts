@@ -28,8 +28,8 @@ export async function assignUser(
   res: Response,
   next: NextFunction
 ) {
-  const { seatId, uid } = req.params;
-  const seat = await assignUserToSeat(uid, seatId);
+  const { seatId, userId } = req.params;
+  const seat = await assignUserToSeat(userId, seatId);
 
   res.status(200).json(seat);
 }

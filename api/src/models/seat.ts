@@ -2,7 +2,6 @@ import { model, Model, models, Schema } from "mongoose";
 import User, { IUser } from "./user";
 
 export interface ISeat {
-  seatId: string;
   seatNo: string;
   userId?: string;
   user?: IUser;
@@ -11,7 +10,6 @@ export interface ISeat {
 }
 
 const SeatSchema = new Schema({
-  seatId: String,
   seatNo: String,
   userId: String,
   user: Object,
