@@ -1,37 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
-import { getUserById, getUsers } from "../services/userService";
-import Table from "../components/Table";
-import TableHead from "../components/TableHead";
-import TableCell from "../components/TableCell";
-import { User } from "../interfaces/user";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import Skeleton from "../components/Skeleton";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import { useForm } from "react-hook-form";
 import { useMemo, useState } from "react";
-import Spinner from "../components/Spinner";
+import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
+import Button from "../components/Button";
+import Input from "../components/Input";
 import Select from "../components/Select";
+import Spinner from "../components/Spinner";
+import Table from "../components/Table";
+import TableCell from "../components/TableCell";
+import TableHead from "../components/TableHead";
+import { useUserContext } from "../contexts/UserContext";
 import { Query } from "../interfaces/query";
+import { User } from "../interfaces/user";
+import { getUsers } from "../services/userService";
+import { useSeatContext } from "../contexts/SeatContext";
 
 function PhoneSearchForm() {
   const [isNotFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit } = useForm<User>();
-  const navigate = useNavigate();
+
+  const { login } = useUserContext();
 
   async function onSubmit(data: User) {
     setLoading(true);
-    const users = await getUsers({ phone: data.phone });
+    const success = await login(data.phone);
     setLoading(false);
-    if (!users || users.length === 0) return setNotFound(true);
-    navigate(`?u=${users[0]._id}`);
+    if (!success) return setNotFound(true);
   }
 
   return (
     <>
-      <main className="p-4">
-        <div className="max-w-screen-lg mx-auto">
+      <main className="p-4 h-[calc(100vh-12rem)] flex items-center justify-center">
+        <div className="max-w-screen-md w-full mx-auto">
           <div className="grid w-full gap-4">
             <h2 className="text-2xl">ติดตามสถานะการลงทะเบียน</h2>
             <form
@@ -39,9 +40,10 @@ function PhoneSearchForm() {
               onSubmit={handleSubmit(onSubmit)}
             >
               <Input
-                placeholder="ใส่เบอร์โทรศัพท์ของท่าน"
+                placeholder="ใส่เบอร์โทรศัพท์ที่ลงเบียนไว้"
                 required
                 {...register("phone")}
+                className="w-full"
               />
               <Button
                 type="submit"
@@ -66,7 +68,8 @@ function PhoneSearchForm() {
 
 export default function Status() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const userId = searchParams.get("u") || undefined;
+  const { user } = useUserContext();
+  const { total, available } = useSeatContext();
 
   const { register, handleSubmit } = useForm<Query>();
 
@@ -82,11 +85,6 @@ export default function Status() {
     queryFn: () => getUsers(queries),
   });
 
-  const userById = useQuery<User | null>({
-    queryKey: ["users", userId],
-    queryFn: () => getUserById(userId),
-  });
-
   function handleQuery(data: Query) {
     setSearchParams((prev) => {
       const newState = new URLSearchParams(prev);
@@ -100,39 +98,48 @@ export default function Status() {
 
   return (
     <>
-      <nav className="py-10">
+      <nav className="py-6 mb-4 px-4 bg-blue-600 text-white">
         <div className="max-w-screen-lg mx-auto">
-          <h1 className="text-3xl font-bold">Event Registration</h1>
+          <h1 className="text-2xl font-bold">Event Registration</h1>
         </div>
       </nav>
-      {userById.data && (
+      {user && (
         <main className="max-w-screen-lg mx-auto">
-          <h1 className="font-medium">สถานะการลงทะเบียน</h1>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="shadow border border-gray-300 rounded-2xl p-4">
+              <div className="text-xl text-gray-500 font-semibold">
+                ผู้เข้าร่วม
+              </div>
+              <div className="text-4xl">20</div>
+            </div>
+            <div className="shadow border border-gray-300 rounded-2xl p-4">
+              <div className="text-xl text-gray-500 font-semibold">
+                จำนวนที่นั่ง
+              </div>
+              <div className="text-4xl">
+                {total}/{available}
+              </div>
+            </div>
+          </div>
+          <div className="font-medium">สถานะการลงทะเบียน</div>
           <dl className="p-4 max-w-md text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700">
             <div className="flex flex-col pb-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">ชื่อ</dt>
               <dd className="font-semibold">
-                {userById.isLoading && <Skeleton />}
-                {userById.data?.firstName} {userById.data?.lastName}
+                {user.firstName} {user.lastName}
               </dd>
             </div>
             <div className="flex flex-col pt-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">
                 เบอร์โทร
               </dt>
-              <dd className="font-semibold">
-                {userById.isLoading && <Skeleton />}
-                {userById.data?.phone}
-              </dd>
+              <dd className="font-semibold">{user.phone}</dd>
             </div>
             <div className="flex flex-col pt-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">
                 หมายเลขที่นั่ง
               </dt>
-              <dd className="font-semibold">
-                {userById.isLoading && <Skeleton />}
-                กรุณารอผู้ดูแลเลือกที่นั่ง
-              </dd>
+              <dd className="font-semibold">กรุณารอผู้ดูแลเลือกที่นั่ง</dd>
             </div>
           </dl>
           <hr className="my-4 mb-6 border-gray-300" />
@@ -149,23 +156,16 @@ export default function Status() {
             <TableHead>
               <tr>
                 <TableCell head>ชื่อ</TableCell>
-                <TableCell head>เบอร์โทร</TableCell>
-                <TableCell head>หมายเลขที่นั่ง</TableCell>
               </tr>
             </TableHead>
             <tbody>
               {users.data?.map((user, index) => (
                 <tr key={index}>
                   <TableCell>
-                    <Link
-                      to={`?u=${user._id}`}
-                      className="font-medium text-black"
-                    >
+                    <span className="font-medium text-black">
                       {user.firstName} {user.lastName}
-                    </Link>
+                    </span>
                   </TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>-</TableCell>
                 </tr>
               ))}
             </tbody>
@@ -177,8 +177,11 @@ export default function Status() {
               <option value="20">20</option>
               <option value="50">50</option>
             </Select>
-            <div>
-              <Button variant="light" className="text-xs rounded-r-none">
+            <div className="flex">
+              <Button
+                variant="light"
+                className="flex justify-center items-center text-xs rounded-r-none"
+              >
                 ก่อนหน้า
               </Button>
               <Button variant="light" className="text-xs rounded-l-none">
@@ -188,7 +191,7 @@ export default function Status() {
           </div>
         </main>
       )}
-      {!userById.data && <PhoneSearchForm />}
+      {!user && <PhoneSearchForm />}
     </>
   );
 }

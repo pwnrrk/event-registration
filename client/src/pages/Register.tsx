@@ -1,4 +1,5 @@
-import { Field, Label } from "@headlessui/react";
+import { Field } from "@headlessui/react";
+import Label from "../components/Label";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useForm } from "react-hook-form";
@@ -6,16 +7,22 @@ import { User } from "../interfaces/user";
 import { createUser } from "../services/userService";
 import Spinner from "../components/Spinner";
 import { useState } from "react";
+import { useUserContext } from "../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit } = useForm<User>();
+  const navigate = useNavigate();
+
+  const { login } = useUserContext();
 
   async function onSubmit(data: User) {
     try {
       setLoading(true);
       const user = await createUser(data);
-      window.location.href = `/status?u=${user._id}`;
+      await login(user.phone);
+      navigate("/status");
     } catch (err) {
       console.error(err);
       window.alert("Unknown error occurred");
@@ -38,6 +45,8 @@ export default function Register() {
             required
             {...register("firstName")}
             placeholder="John"
+            className="w-full"
+            autoFocus
           />
         </Field>
         <Field>
@@ -47,6 +56,7 @@ export default function Register() {
             required
             {...register("lastName")}
             placeholder="Snow"
+            className="w-full"
           />
         </Field>
         <Field>
@@ -55,6 +65,7 @@ export default function Register() {
             type="tel"
             required
             {...register("phone")}
+            className="w-full"
             placeholder="0000000000"
           />
         </Field>
