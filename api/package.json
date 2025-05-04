@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "serve": "nodemon ./src/app.ts"
+    "serve": "nodemon ./src/app.ts",
+    "build": "tcs",
+    "start": "node dist/app.js"
   },
   "keywords": [],
   "author": "",

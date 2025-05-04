@@ -8,18 +8,24 @@ export default function Landing() {
     queryFn: getInformation,
   });
   return (
-    <main className="max-w-screen-lg mx-auto h-screen flex flex-col justify-center items-center">
-      <div className="grid gap-4">
-        <h1 className="text-2xl font-medium">Event Registration</h1>
-        <div>จำนวนที่นั่งทั้งหมด: {info.data?.totalSeat}</div>
-        <div>จำนวนที่นั่งคงเหลือ: {info.data?.available}</div>
-        <hr className="border-gray-300" />
-        <LinkButton href="/register" className="text-lg/6">
-          ลงชื่อเข้างาน
-        </LinkButton>
-        <LinkButton href="/status" className="text-lg/6">
-          ตรวจสอบสถานะ
-        </LinkButton>
+    <main className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white h-screen flex flex-col justify-center items-center">
+      <div className="grid text-center gap-4">
+        <h1 className="text-4xl font-bold">Event Registration</h1>
+        <div>
+          จำนวนที่นั่งคงเหลือ: {info.data?.totalSeat}/{info.data?.available}
+        </div>
+        <div className="grid lg:flex gap-4 items-center">
+          <LinkButton variant="light" href="/register" className="text-xl/6">
+            ลงชื่อเข้างาน
+          </LinkButton>
+          <LinkButton
+            variant="light"
+            href="/status"
+            className="text-xl/6 !bg-transparent !text-white"
+          >
+            ตรวจสอบสถานะ
+          </LinkButton>
+        </div>
       </div>
     </main>
   );

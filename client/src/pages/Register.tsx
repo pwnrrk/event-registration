@@ -1,25 +1,70 @@
 import { Field, Label } from "@headlessui/react";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import { useForm } from "react-hook-form";
+import { User } from "../interfaces/user";
+import { createUser } from "../services/userService";
+import Spinner from "../components/Spinner";
+import { useState } from "react";
 
 export default function Register() {
+  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit } = useForm<User>();
+
+  async function onSubmit(data: User) {
+    try {
+      setLoading(true);
+      const user = await createUser(data);
+      window.location.href = `/status?u=${user._id}`;
+    } catch (err) {
+      console.error(err);
+      window.alert("Unknown error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="max-w-screen-lg mx-auto h-screen flex p-4 flex-col justify-center items-center">
-      <form className="grid gap-4 max-w-screen-lg w-full">
+      <form
+        className="grid gap-4 max-w-screen-sm w-full"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <h1 className="text-2xl font-medium">ลงทะเบียนเข้างาน</h1>
         <Field>
           <Label>ชื่อ</Label>
-          <Input type="text" required name="firstName" />
+          <Input
+            type="text"
+            required
+            {...register("firstName")}
+            placeholder="John"
+          />
         </Field>
         <Field>
           <Label>นามสกุล</Label>
-          <Input type="text" required name="lastName" />
+          <Input
+            type="text"
+            required
+            {...register("lastName")}
+            placeholder="Snow"
+          />
         </Field>
         <Field>
           <Label>เบอร์โทรศัพท์</Label>
-          <Input type="tel" required name="phone" />
+          <Input
+            type="tel"
+            required
+            {...register("phone")}
+            placeholder="0000000000"
+          />
         </Field>
-        <Button type="submit">ลงทะเบียน</Button>
+        <Button
+          type="submit"
+          className="flex justify-center items-center gap-4"
+          disabled={loading}
+        >
+          ลงทะเบียน {loading && <Spinner className="!size-4" />}
+        </Button>
       </form>
     </main>
   );

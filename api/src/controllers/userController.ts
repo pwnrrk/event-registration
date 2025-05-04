@@ -1,20 +1,37 @@
-import { NextFunction, Request, Response } from "express";
-import { createUser, getUsers } from "../repositories/userRepository";
-import { IUser } from "../models/user";
+import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { getFindOptions } from "../libs/findOptions";
+import { IUser } from "../models/user";
+import {
+  createUser,
+  getUserById,
+  getUsers,
+} from "../repositories/userRepository";
+import createHttpError from "http-errors";
 
-export async function index(req: Request, res: Response, next: NextFunction) {
-  const users = await getUsers(getFindOptions(req));
+export async function index(req: Request, res: Response) {
+  const phone = req.query.phone;
+
+  const users = await getUsers({
+    ...getFindOptions(req),
+    phone: phone ? (phone as string) : undefined,
+  });
+
   res.json(users);
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(req: Request, res: Response) {
   const validated = validationResult(req);
-  validated.throw();
+  if (!validated.isEmpty())
+    throw createHttpError(400, { errors: validated.array() });
 
   const input: IUser = req.body;
   const newUser = await createUser(input);
 
   res.status(201).json(newUser);
+}
+
+export async function find(req: Request, res: Response) {
+  const user = await getUserById(req.params.id);
+  res.json(user);
 }

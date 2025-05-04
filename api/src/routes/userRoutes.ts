@@ -6,5 +6,6 @@ const userRoute = Router();
 
 userRoute.get("/", UserController.index);
 userRoute.post("/", userValidator, UserController.create);
+userRoute.get("/:id", UserController.find);
 
 export default userRoute;

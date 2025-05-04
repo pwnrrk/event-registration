@@ -7,6 +7,7 @@ import {
 import { ISeat } from "../models/seat";
 import { validationResult } from "express-validator";
 import { getFindOptions } from "../libs/findOptions";
+import createHttpError from "http-errors";
 
 export async function index(req: Request, res: Response, next: NextFunction) {
   const seats = await getSeats(getFindOptions(req));
@@ -15,7 +16,8 @@ export async function index(req: Request, res: Response, next: NextFunction) {
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   const validated = validationResult(req);
-  validated.throw();
+  if (!validated.isEmpty())
+    throw createHttpError(400, { errors: validated.array() });
 
   const input: ISeat = req.body;
   const newSeat = await createSeat(input);
