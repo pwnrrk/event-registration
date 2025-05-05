@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Select from "../components/Select";
@@ -283,7 +283,7 @@ export default function Status() {
     <>
       <nav className="py-6 mb-4 px-4 bg-blue-600 text-white">
         <div className="max-w-screen-lg mx-auto">
-          <h1 className="text-2xl font-bold">Event Registration</h1>
+          <Link to="/" className="text-2xl font-bold">Event Registration</Link>
         </div>
       </nav>
       {auth.user && (

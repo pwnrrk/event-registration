@@ -9,6 +9,7 @@ import Spinner from "../components/Spinner";
 import { useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { isFormErrors } from "../utils";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,12 @@ export default function Register() {
       navigate("/status");
     } catch (err) {
       console.error(err);
-      window.alert("Unknown error occurred");
+      if (isFormErrors(err)) {
+        return window.alert(
+          "We are sorry " + err.errors[0]?.msg || "unknown error occurred"
+        );
+      }
+      window.alert("We are sorry, unknown error occurred");
     } finally {
       setLoading(false);
     }

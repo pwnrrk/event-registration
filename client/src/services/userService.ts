@@ -30,5 +30,5 @@ export async function createUser(input: Partial<User>): Promise<User> {
 
   if (res.ok) return res.json();
 
-  throw new Error(res.statusText);
+  throw await res.json();
 }
