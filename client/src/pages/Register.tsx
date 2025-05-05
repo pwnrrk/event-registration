@@ -7,7 +7,7 @@ import { User } from "../interfaces/user";
 import { createUser } from "../services/userService";
 import Spinner from "../components/Spinner";
 import { useState } from "react";
-import { useUserContext } from "../contexts/AuthContext";
+import { useAuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -15,7 +15,7 @@ export default function Register() {
   const { register, handleSubmit } = useForm<User>();
   const navigate = useNavigate();
 
-  const { login } = useUserContext();
+  const { login } = useAuthContext();
 
   async function onSubmit(data: User) {
     try {

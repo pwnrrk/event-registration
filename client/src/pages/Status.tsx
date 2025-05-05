@@ -163,16 +163,17 @@ function SelectSeatForUser({
 
 export default function Status() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuthContext();
+  const auth = useAuthContext();
   const seatInfo = useSeatContext();
   const [selectedUser, setSelectedUser] = useState<User>();
 
-  const { register, handleSubmit } = useForm<Query>();
+  const { register, handleSubmit, setValue } = useForm<Query>();
 
   const queries = useMemo(() => {
     const options: Record<string, string> = {};
     if (searchParams.has("search"))
       options.search = searchParams.get("search")!;
+    if (searchParams.has("sort")) options.sort = searchParams.get("sort")!;
     return options;
   }, [searchParams]);
 
@@ -187,6 +188,8 @@ export default function Status() {
 
       if (data.search) newState.set("search", data.search);
       else newState.delete("search");
+      if (data.sort) newState.set("sort", data.sort);
+      else newState.delete("sort");
 
       return newState;
     });
@@ -205,6 +208,39 @@ export default function Status() {
     seatInfo.refetch();
   }
 
+  const sortOptions = [
+    {
+      label: "ชื่อ A-Z",
+      value: "firstName:asc",
+    },
+    {
+      label: "ชื่อ Z-A",
+      value: "firstName:desc",
+    },
+    {
+      label: "ลงทะเบียนล่าสุด",
+      value: "created:desc",
+    },
+    {
+      label: "ลงทะเบียนก่อน",
+      value: "created:asc",
+    },
+  ];
+
+  if (auth.user?.isAdmin) {
+    sortOptions.push(
+      {
+        label: "เลขที่นั่ง A-Z",
+        value: "seat:asc",
+      },
+      { label: "เลขที่นั่ง Z-A", value: "seat:desc" }
+    );
+  }
+
+  function forceSubmit() {
+    handleSubmit(handleQuery)();
+  }
+
   return (
     <>
       <nav className="py-6 mb-4 px-4 bg-blue-600 text-white">
@@ -212,7 +248,7 @@ export default function Status() {
           <h1 className="text-2xl font-bold">Event Registration</h1>
         </div>
       </nav>
-      {user && (
+      {auth.user && (
         <main className="max-w-screen-lg mx-auto">
           <div className="grid grid-cols-2 gap-4 mb-4 px-4">
             <div className="shadow border border-gray-300 rounded-2xl p-4">
@@ -231,45 +267,67 @@ export default function Status() {
             </div>
           </div>
           <div className="px-4 font-medium">สถานะการลงทะเบียน</div>
-          <dl className="p-4 max-w-md text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700">
+          <dl className="p-4  text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700">
             <div className="flex flex-col pb-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">ชื่อ</dt>
               <dd className="font-semibold">
-                {user.firstName} {user.lastName}
+                {auth.user.firstName} {auth.user.lastName}
               </dd>
             </div>
             <div className="flex flex-col pt-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">
                 เบอร์โทร
               </dt>
-              <dd className="font-semibold">{user.phone}</dd>
+              <dd className="font-semibold">{auth.user.phone}</dd>
             </div>
             <div className="flex flex-col pt-3">
               <dt className="mb-1 text-gray-500  dark:text-gray-400">
                 หมายเลขที่นั่ง
               </dt>
               <dd className="font-semibold">
-                {user.seat?.seatNo || "กรุณารอผู้ดูแลเลือกที่นั่ง"}
+                {auth.user.seat?.seatNo || "กรุณารอผู้ดูแลเลือกที่นั่ง"}
               </dd>
             </div>
           </dl>
           <hr className="m-4 mb-6 border-gray-300" />
           <h3 className="text-lg mb-4 px-4">ผู้เข้าร่วมทั้งหมด</h3>
-          <form onSubmit={handleSubmit(handleQuery)} className="flex mb-4 px-4">
+          <form
+            onSubmit={handleSubmit(handleQuery)}
+            className="flex mb-4 px-4 gap-4"
+          >
             <Input
               placeholder="ค้นหา"
               className="w-96"
               {...register("search")}
             />
+            <Select
+              {...register("sort")}
+              onChange={(ev) => {
+                setValue("sort", ev.target.value);
+                forceSubmit();
+              }}
+            >
+              <option value="">เรียงลำดับ</option>
+              {sortOptions.map((sort) => (
+                <option key={sort.value} value={sort.value}>
+                  {sort.label}
+                </option>
+              ))}
+            </Select>
             <input type="submit" className="hidden" />
           </form>
           <Table>
             <TableHead>
               <tr>
                 <TableCell head>ชื่อ</TableCell>
-                <TableCell head>เบอร์โทร</TableCell>
-                <TableCell head>หมายเลขที่นั่ง</TableCell>
-                <TableCell head></TableCell>
+                <TableCell head>ลงทะเบียนวันที่</TableCell>
+                {auth.user.isAdmin && (
+                  <>
+                    <TableCell head>เบอร์โทร</TableCell>
+                    <TableCell head>หมายเลขที่นั่ง</TableCell>
+                    <TableCell head></TableCell>
+                  </>
+                )}
               </tr>
             </TableHead>
             <tbody>
@@ -280,25 +338,35 @@ export default function Status() {
                       {user.firstName} {user.lastName}
                     </span>
                   </TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>{user.seat?.seatNo}</TableCell>
                   <TableCell>
-                    {user.seat ? (
-                      <button
-                        className="underline text-black cursor-pointer"
-                        onClick={() => handleReturnSeat(user.seat!._id)}
-                      >
-                        คืนที่นั่ง
-                      </button>
-                    ) : (
-                      <button
-                        className="underline text-black cursor-pointer"
-                        onClick={() => setSelectedUser(user)}
-                      >
-                        เลือกที่นั่ง
-                      </button>
-                    )}
+                    {new Date(user.created!).toLocaleString([], {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </TableCell>
+                  {auth.user?.isAdmin && (
+                    <>
+                      <TableCell>{user.phone}</TableCell>
+                      <TableCell>{user.seat?.seatNo}</TableCell>
+                      <TableCell>
+                        {user.seat ? (
+                          <button
+                            className="underline text-black cursor-pointer"
+                            onClick={() => handleReturnSeat(user.seat!._id)}
+                          >
+                            คืนที่นั่ง
+                          </button>
+                        ) : (
+                          <button
+                            className="underline text-black cursor-pointer"
+                            onClick={() => setSelectedUser(user)}
+                          >
+                            เลือกที่นั่ง
+                          </button>
+                        )}
+                      </TableCell>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -324,7 +392,7 @@ export default function Status() {
           </div>
         </main>
       )}
-      {!user && <PhoneSearchForm />}
+      {!auth.user && <PhoneSearchForm />}
       {selectedUser && (
         <SelectSeatForUser
           user={selectedUser}
