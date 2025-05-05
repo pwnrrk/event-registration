@@ -25,3 +25,8 @@ cd api
 npm install
 npm run serve
 ```
+
+Initial Admin Password
+
+- username: admin
+- password: admin1234
