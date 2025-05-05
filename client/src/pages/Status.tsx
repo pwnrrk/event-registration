@@ -21,6 +21,8 @@ import {
   getSeats,
   removeUserFromSeat,
 } from "../services/seatService";
+import { useAppContext } from "../contexts/AppContext";
+import { DEFAULT_LIMIT } from "../constants";
 
 function PhoneSearchForm() {
   const [isNotFound, setNotFound] = useState(false);
@@ -161,19 +163,32 @@ function SelectSeatForUser({
   );
 }
 
+type UserFilterForm = Record<string, string> & Record<keyof Query, string>;
+
 export default function Status() {
   const [searchParams, setSearchParams] = useSearchParams();
   const auth = useAuthContext();
-  const seatInfo = useSeatContext();
+  const seatContext = useSeatContext();
+  const appContext = useAppContext();
   const [selectedUser, setSelectedUser] = useState<User>();
+  const currentPage = searchParams.get("page") || "1";
 
-  const { register, handleSubmit, setValue } = useForm<Query>();
+  const { register, handleSubmit, setValue } = useForm<UserFilterForm>();
 
   const queries = useMemo(() => {
     const options: Record<string, string> = {};
+
     if (searchParams.has("search"))
       options.search = searchParams.get("search")!;
+
     if (searchParams.has("sort")) options.sort = searchParams.get("sort")!;
+
+    if (searchParams.has("limit")) options.limit = searchParams.get("limit")!;
+    else options.limit = DEFAULT_LIMIT;
+
+    if (searchParams.has("page")) options.page = searchParams.get("page")!;
+    else options.page = "1";
+
     return options;
   }, [searchParams]);
 
@@ -182,14 +197,14 @@ export default function Status() {
     queryFn: () => getUsers(queries),
   });
 
-  function handleQuery(data: Query) {
+  function handleQuery(data: UserFilterForm) {
     setSearchParams((prev) => {
       const newState = new URLSearchParams(prev);
 
-      if (data.search) newState.set("search", data.search);
-      else newState.delete("search");
-      if (data.sort) newState.set("sort", data.sort);
-      else newState.delete("sort");
+      Object.keys(data).forEach((key) => {
+        if (data[key]) newState.set(key, data[key]);
+        else newState.delete(key);
+      });
 
       return newState;
     });
@@ -198,14 +213,16 @@ export default function Status() {
   function handleCloseSelectSeatDialog() {
     setSelectedUser(undefined);
     users.refetch();
-    seatInfo.refetch();
+    seatContext.refetch();
+    appContext.refetch();
   }
 
   async function handleReturnSeat(id: string) {
     if (!confirm("ต้องการคืนที่นั่ง?")) return;
     await removeUserFromSeat(id);
     users.refetch();
-    seatInfo.refetch();
+    seatContext.refetch();
+    appContext.refetch();
   }
 
   const sortOptions = [
@@ -240,6 +257,26 @@ export default function Status() {
   function forceSubmit() {
     handleSubmit(handleQuery)();
   }
+  const pageNum = Number(currentPage);
+  const next =
+    (pageNum - 1 + 1) * Number(searchParams.get("limit") || DEFAULT_LIMIT);
+  const canGoNextPage = next < appContext.totalUser!;
+
+  function nextPage() {
+    if (canGoNextPage) {
+      setValue("page", `${pageNum + 1}`);
+      forceSubmit();
+    }
+  }
+
+  const canGoPrevPage = pageNum - 1 >= 1;
+
+  function prePage() {
+    if (canGoPrevPage) {
+      setValue("page", `${pageNum - 1}`);
+      forceSubmit();
+    }
+  }
 
   return (
     <>
@@ -255,14 +292,14 @@ export default function Status() {
               <div className="text-xl text-gray-500 font-semibold">
                 ผู้เข้าร่วม
               </div>
-              <div className="text-4xl">20</div>
+              <div className="text-4xl">{appContext.totalUser}</div>
             </div>
             <div className="shadow border border-gray-300 rounded-2xl p-4">
               <div className="text-xl text-gray-500 font-semibold">
                 จำนวนที่นั่ง
               </div>
               <div className="text-4xl">
-                {seatInfo.available}/{seatInfo.total}
+                {appContext.available}/{appContext.totalSeat}
               </div>
             </div>
           </div>
@@ -373,7 +410,14 @@ export default function Status() {
           </Table>
           <div className="flex justify-end items-center gap-4 pb-4">
             <div>จำนวนต่อหน้า</div>
-            <Select className="w-20 py-2">
+            <Select
+              className="w-20 py-2"
+              {...register("limit")}
+              onChange={(ev) => {
+                setValue("limit", ev.target.value);
+                forceSubmit();
+              }}
+            >
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -382,10 +426,17 @@ export default function Status() {
               <Button
                 variant="light"
                 className="flex justify-center items-center text-xs rounded-r-none"
+                onClick={prePage}
+                disabled={!canGoPrevPage}
               >
                 ก่อนหน้า
               </Button>
-              <Button variant="light" className="text-xs rounded-l-none">
+              <Button
+                variant="light"
+                className="text-xs rounded-l-none"
+                onClick={nextPage}
+                disabled={!canGoNextPage}
+              >
                 ถัดไป
               </Button>
             </div>

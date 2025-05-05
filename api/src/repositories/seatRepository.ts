@@ -85,7 +85,7 @@ export async function createDefaultSeats() {
 export async function countSeats({ user }: FindOptions) {
   const query: any = {};
 
-  if (user) query.user = user;
+  if (user !== undefined) query.user = user;
 
-  return Seat.countDocuments();
+  return Seat.countDocuments(query);
 }
