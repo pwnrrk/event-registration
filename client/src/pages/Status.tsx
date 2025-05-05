@@ -23,6 +23,7 @@ import {
 } from "../services/seatService";
 import { useAppContext } from "../contexts/AppContext";
 import { DEFAULT_LIMIT } from "../constants";
+import Badge from "../components/Badge";
 
 function PhoneSearchForm() {
   const [isNotFound, setNotFound] = useState(false);
@@ -357,11 +358,17 @@ export default function Status() {
             <TableHead>
               <tr>
                 <TableCell head>ชื่อ</TableCell>
-                <TableCell head>ลงทะเบียนวันที่</TableCell>
+                <TableCell head className="hidden lg:table-cell">
+                  ลงทะเบียนวันที่
+                </TableCell>
                 {auth.user.isAdmin && (
                   <>
-                    <TableCell head>เบอร์โทร</TableCell>
-                    <TableCell head>หมายเลขที่นั่ง</TableCell>
+                    <TableCell head className="hidden lg:table-cell">
+                      เบอร์โทร
+                    </TableCell>
+                    <TableCell head className="hidden lg:table-cell">
+                      หมายเลขที่นั่ง
+                    </TableCell>
                     <TableCell head></TableCell>
                   </>
                 )}
@@ -374,8 +381,16 @@ export default function Status() {
                     <span className="font-medium text-black">
                       {user.firstName} {user.lastName}
                     </span>
+                    {auth.user?.isAdmin && (
+                      <div className="lg:hidden text-xs">
+                        {user.phone}{" "}
+                        {user.seat?.seatNo && (
+                          <Badge>{user.seat?.seatNo}</Badge>
+                        )}
+                      </div>
+                    )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     {new Date(user.created!).toLocaleString([], {
                       dateStyle: "medium",
                       timeStyle: "short",
@@ -383,8 +398,14 @@ export default function Status() {
                   </TableCell>
                   {auth.user?.isAdmin && (
                     <>
-                      <TableCell>{user.phone}</TableCell>
-                      <TableCell>{user.seat?.seatNo}</TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {user.phone}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {user.seat?.seatNo && (
+                          <Badge>{user.seat?.seatNo}</Badge>
+                        )}
+                      </TableCell>
                       <TableCell>
                         {user.seat ? (
                           <button
