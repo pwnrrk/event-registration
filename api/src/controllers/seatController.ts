@@ -3,6 +3,7 @@ import {
   assignUserToSeat,
   createSeat,
   getSeats,
+  removeUserFromSeat,
 } from "../repositories/seatRepository";
 import { ISeat } from "../models/seat";
 import { validationResult } from "express-validator";
@@ -34,4 +35,11 @@ export async function assignUser(
   const seat = await assignUserToSeat(userId, seatId);
 
   res.status(200).json(seat);
+}
+
+export async function removeUser(req: Request, res: Response) {
+  const { seatId } = req.params;
+  const seat = await removeUserFromSeat(seatId);
+
+  res.json(seat);
 }

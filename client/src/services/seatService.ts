@@ -21,3 +21,12 @@ export async function assignSeat(
 
   throw await res.json();
 }
+
+export async function removeUserFromSeat(id: string): Promise<Seat> {
+  const res = await fetch(`/api/seats/${id}/user`, {
+    method: "DELETE",
+  });
+  if (res.ok) return res.json();
+
+  throw await res.json();
+}

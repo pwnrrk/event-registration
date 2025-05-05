@@ -16,7 +16,11 @@ import { getUsers } from "../services/userService";
 import { useSeatContext } from "../contexts/SeatContext";
 import { Dialog, DialogPanel, DialogTitle, Field } from "@headlessui/react";
 import Label from "../components/Label";
-import { assignSeat, getSeats } from "../services/seatService";
+import {
+  assignSeat,
+  getSeats,
+  removeUserFromSeat,
+} from "../services/seatService";
 
 function PhoneSearchForm() {
   const [isNotFound, setNotFound] = useState(false);
@@ -194,6 +198,13 @@ export default function Status() {
     seatInfo.refetch();
   }
 
+  async function handleReturnSeat(id: string) {
+    if (!confirm("ต้องการคืนที่นั่ง?")) return;
+    await removeUserFromSeat(id);
+    users.refetch();
+    seatInfo.refetch();
+  }
+
   return (
     <>
       <nav className="py-6 mb-4 px-4 bg-blue-600 text-white">
@@ -258,6 +269,7 @@ export default function Status() {
                 <TableCell head>ชื่อ</TableCell>
                 <TableCell head>เบอร์โทร</TableCell>
                 <TableCell head>หมายเลขที่นั่ง</TableCell>
+                <TableCell head></TableCell>
               </tr>
             </TableHead>
             <tbody>
@@ -269,9 +281,15 @@ export default function Status() {
                     </span>
                   </TableCell>
                   <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.seat?.seatNo}</TableCell>
                   <TableCell>
                     {user.seat ? (
-                      user.seat.seatNo
+                      <button
+                        className="underline text-black cursor-pointer"
+                        onClick={() => handleReturnSeat(user.seat!._id)}
+                      >
+                        คืนที่นั่ง
+                      </button>
                     ) : (
                       <button
                         className="underline text-black cursor-pointer"

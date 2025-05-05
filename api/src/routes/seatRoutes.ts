@@ -7,5 +7,6 @@ const seatRoute = Router();
 seatRoute.get("/", SeatController.index);
 seatRoute.post("/", seatValidator, SeatController.create);
 seatRoute.put("/:seatId/user/:userId", SeatController.assignUser);
+seatRoute.delete("/:seatId/user", SeatController.removeUser);
 
 export default seatRoute;
