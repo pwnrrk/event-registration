@@ -1,19 +1,21 @@
 import { createContext, useContext } from "react";
-import { User } from "../interfaces/user";
 
 export interface AuthContextValue {
-  user: User | null;
+  username?: string;
   isLoading: boolean;
   isLoggedIn: boolean;
-  login(phone: string): Promise<boolean>;
+  login(username: string, password: string): Promise<boolean>;
+  logout(): Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
-  user: null,
   isLoading: false,
   isLoggedIn: false,
   login() {
     throw new Error("Function not implemented");
+  },
+  logout: function (): Promise<void> {
+    throw new Error("Function not implemented.");
   },
 });
 

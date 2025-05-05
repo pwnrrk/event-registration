@@ -1,30 +1,46 @@
-import { PropsWithChildren, useState } from "react";
-import { AuthContext } from "../contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "../interfaces/user";
-import { getUserById, getUsers } from "../services/userService";
+import { PropsWithChildren } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+import * as AuthService from "../services/authService";
 
 export default function AuthContextProvider({ children }: PropsWithChildren) {
-  const [userId, setUserId] = useState<string | null>(null);
-  const { data, isLoading } = useQuery<User | null>({
-    queryKey: ["users", userId],
-    queryFn: () => getUserById(userId || undefined),
+  const auth = useQuery({
+    queryKey: ["auth"],
+    queryFn: AuthService.checkLogin,
   });
 
-  async function login(phone: string): Promise<boolean> {
-    const users = await getUsers({ phone });
-    if (!users || users.length === 0) return false;
-    setUserId(users[0]._id);
-    return true;
+  async function login(username: string, password: string) {
+    try {
+      await AuthService.login(username, password);
+      auth.refetch();
+      return true;
+    } catch (err) {
+      if (err instanceof Error) {
+        window.alert(err.message);
+      }
+      return false;
+    }
+  }
+
+  async function logout() {
+    try {
+      await AuthService.logout();
+      window.location.href = "/";
+    } catch (err) {
+      if (err instanceof Error) {
+        window.alert(err.message);
+      }
+    }
   }
 
   return (
     <AuthContext.Provider
       value={{
-        user: data || null,
-        isLoading,
-        isLoggedIn: data !== null,
+        username: auth.data?.username,
+        isLoggedIn: auth.data !== undefined && !auth.error,
         login,
+        logout,
+        isLoading: auth.isLoading,
       }}
     >
       {children}

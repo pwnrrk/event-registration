@@ -71,10 +71,13 @@ export async function removeUserFromSeat(id: string) {
 }
 
 export async function createDefaultSeats() {
-  await Seat.deleteMany();
+  const seatCount = await countSeats({});
+  if (seatCount !== 0) return;
+
   const rows = ["A", "B", "C", "D", "E"];
+
   for (let i = 0; i < rows.length; i++) {
-    for (let j = 1; j < 5; j++) {
+    for (let j = 1; j < 6; j++) {
       createSeat({
         seatNo: `${rows[i]}${j}`,
       });

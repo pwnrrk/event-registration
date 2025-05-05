@@ -5,7 +5,6 @@ export interface IUser {
   firstName: string;
   lastName: string;
   phone: string;
-  isAdmin?: boolean;
   seat?: Types.ObjectId | ISeat;
   created?: Date;
   updated?: Date;
@@ -15,7 +14,6 @@ const UserSchema = new Schema<IUser>({
   firstName: String,
   lastName: String,
   phone: String,
-  isAdmin: Boolean,
   seat: { type: Schema.Types.ObjectId, ref: "Seat" },
   created: Date,
   updated: Date,

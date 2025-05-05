@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AuthContextProvider from "./components/AuthContextProvider";
 import SeatContextProvider from "./components/SeatContextProvider";
 import AppContextProvider from "./components/AppContextProvider";
+import AppBar from "./components/AppBar";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Register = lazy(() => import("./pages/Register"));
@@ -19,6 +20,7 @@ export default function App() {
         <AuthContextProvider>
           <SeatContextProvider>
             <BrowserRouter>
+              <AppBar />
               <Suspense>
                 <Routes>
                   <Route path="/" element={<Landing />} />

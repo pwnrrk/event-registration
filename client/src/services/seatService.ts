@@ -16,6 +16,7 @@ export async function assignSeat(
 ): Promise<Seat | null> {
   const res = await fetch(`/api/seats/${seatId}/user/${userId}`, {
     method: "PUT",
+    credentials: "include",
   });
   if (res.ok) return res.json();
 
@@ -25,6 +26,7 @@ export async function assignSeat(
 export async function removeUserFromSeat(id: string): Promise<Seat> {
   const res = await fetch(`/api/seats/${id}/user`, {
     method: "DELETE",
+    credentials: "include",
   });
   if (res.ok) return res.json();
 

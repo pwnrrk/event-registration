@@ -1,77 +1,73 @@
+import { Dialog, DialogPanel, DialogTitle, Field } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Badge from "../components/Badge";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import Label from "../components/Label";
 import Select from "../components/Select";
 import Spinner from "../components/Spinner";
 import Table from "../components/Table";
 import TableCell from "../components/TableCell";
 import TableHead from "../components/TableHead";
+import { DEFAULT_LIMIT } from "../constants";
+import { useAppContext } from "../contexts/AppContext";
 import { useAuthContext } from "../contexts/AuthContext";
+import { useSeatContext } from "../contexts/SeatContext";
 import { Query } from "../interfaces/query";
 import { User } from "../interfaces/user";
-import { getUsers } from "../services/userService";
-import { useSeatContext } from "../contexts/SeatContext";
-import { Dialog, DialogPanel, DialogTitle, Field } from "@headlessui/react";
-import Label from "../components/Label";
 import {
   assignSeat,
   getSeats,
   removeUserFromSeat,
 } from "../services/seatService";
-import { useAppContext } from "../contexts/AppContext";
-import { DEFAULT_LIMIT } from "../constants";
-import Badge from "../components/Badge";
+import { getUserById, getUsers } from "../services/userService";
 
 function PhoneSearchForm() {
   const [isNotFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit } = useForm<User>();
-
-  const { login } = useAuthContext();
+  const navigate = useNavigate();
 
   async function onSubmit(data: User) {
     setLoading(true);
-    const success = await login(data.phone);
+    const users = await getUsers({ phone: data.phone });
     setLoading(false);
-    if (!success) return setNotFound(true);
+    if (!users || users.length === 0) {
+      return setNotFound(true);
+    }
+    navigate(`?u=${users[0]._id}`);
   }
 
   return (
     <>
-      <main className="p-4 h-[calc(100vh-12rem)] flex items-center justify-center">
-        <div className="max-w-screen-md w-full mx-auto">
-          <div className="grid w-full gap-4">
-            <h2 className="text-2xl">ติดตามสถานะการลงทะเบียน</h2>
-            <form
-              className="lg:flex grid gap-4 items-center"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              <Input
-                placeholder="ใส่เบอร์โทรศัพท์ที่ลงเบียนไว้"
-                required
-                {...register("phone")}
-                className="w-full"
-              />
-              <Button
-                type="submit"
-                className="flex-none flex items-center justify-center gap-4"
-                disabled={loading}
-              >
-                ตรวจสอบ
-                {loading && <Spinner className="!size-4" />}
-              </Button>
-            </form>
-            {isNotFound && (
-              <span className="text-red-500">
-                ไม่พบผู้เข้าร่วมด้วยเบอร์โทรนี้
-              </span>
-            )}
-          </div>
-        </div>
-      </main>
+      <div className="grid w-full gap-4">
+        <h2 className="text-2xl">ติดตามสถานะการลงทะเบียน</h2>
+        <form
+          className="lg:flex grid gap-4 items-center"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <Input
+            placeholder="ใส่เบอร์โทรศัพท์ที่ลงเบียนไว้"
+            required
+            {...register("phone")}
+            className="w-full"
+          />
+          <Button
+            type="submit"
+            className="flex-none flex items-center justify-center gap-4"
+            disabled={loading}
+          >
+            ตรวจสอบ
+            {loading && <Spinner className="!size-4" />}
+          </Button>
+        </form>
+        {isNotFound && (
+          <span className="text-red-500">ไม่พบผู้เข้าร่วมด้วยเบอร์โทรนี้</span>
+        )}
+      </div>
     </>
   );
 }
@@ -198,6 +194,13 @@ export default function Status() {
     queryFn: () => getUsers(queries),
   });
 
+  const viewUser = searchParams.get("u") || undefined;
+
+  const userById = useQuery({
+    queryKey: ["users", viewUser],
+    queryFn: () => getUserById(viewUser),
+  });
+
   function handleQuery(data: UserFilterForm) {
     setSearchParams((prev) => {
       const newState = new URLSearchParams(prev);
@@ -245,7 +248,7 @@ export default function Status() {
     },
   ];
 
-  if (auth.user?.isAdmin) {
+  if (auth.isLoggedIn) {
     sortOptions.push(
       {
         label: "เลขที่นั่ง A-Z",
@@ -281,190 +284,177 @@ export default function Status() {
 
   return (
     <>
-      <nav className="py-6 mb-4 px-4 bg-blue-600 text-white">
-        <div className="max-w-screen-lg mx-auto">
-          <Link to="/" className="text-2xl font-bold">Event Registration</Link>
-        </div>
-      </nav>
-      {auth.user && (
-        <main className="max-w-screen-lg mx-auto">
-          <div className="grid grid-cols-2 gap-4 mb-4 px-4">
-            <div className="shadow border border-gray-300 rounded-2xl p-4">
-              <div className="text-xl text-gray-500 font-semibold">
-                ผู้เข้าร่วม
-              </div>
-              <div className="text-4xl">{appContext.totalUser}</div>
+      <div className="max-w-screen-lg mx-auto p-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="shadow border border-gray-300 rounded-2xl p-4">
+            <div className="text-xl text-gray-500 font-semibold">
+              ผู้เข้าร่วม
             </div>
-            <div className="shadow border border-gray-300 rounded-2xl p-4">
-              <div className="text-xl text-gray-500 font-semibold">
-                จำนวนที่นั่ง
-              </div>
-              <div className="text-4xl">
-                {appContext.available}/{appContext.totalSeat}
-              </div>
+            <div className="text-4xl">{appContext.totalUser}</div>
+          </div>
+          <div className="shadow border border-gray-300 rounded-2xl p-4">
+            <div className="text-xl text-gray-500 font-semibold">
+              จำนวนที่นั่ง
+            </div>
+            <div className="text-4xl">
+              {appContext.available}/{appContext.totalSeat}
             </div>
           </div>
-          <div className="px-4 font-medium">สถานะการลงทะเบียน</div>
-          <dl className="p-4  text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700">
-            <div className="flex flex-col pb-3">
-              <dt className="mb-1 text-gray-500  dark:text-gray-400">ชื่อ</dt>
-              <dd className="font-semibold">
-                {auth.user.firstName} {auth.user.lastName}
-              </dd>
-            </div>
-            <div className="flex flex-col pt-3">
-              <dt className="mb-1 text-gray-500  dark:text-gray-400">
-                เบอร์โทร
-              </dt>
-              <dd className="font-semibold">{auth.user.phone}</dd>
-            </div>
-            <div className="flex flex-col pt-3">
-              <dt className="mb-1 text-gray-500  dark:text-gray-400">
-                หมายเลขที่นั่ง
-              </dt>
-              <dd className="font-semibold">
-                {auth.user.seat?.seatNo || "กรุณารอผู้ดูแลเลือกที่นั่ง"}
-              </dd>
-            </div>
-          </dl>
-          <hr className="m-4 mb-6 border-gray-300" />
-          <h3 className="text-lg mb-4 px-4">ผู้เข้าร่วมทั้งหมด</h3>
-          <form
-            onSubmit={handleSubmit(handleQuery)}
-            className="flex mb-4 px-4 gap-4"
+        </div>
+        <hr className="mx-4 my-8 border-gray-300" />
+        <PhoneSearchForm />
+        {userById.data && (
+          <>
+            <div className="font-medium my-4">สถานะการลงทะเบียน</div>
+            <dl className="text-gray-900 divide-y divide-gray-200 dark:text-white dark:divide-gray-700">
+              <div className="flex flex-col pb-3">
+                <dt className="mb-1 text-gray-500  dark:text-gray-400">ชื่อ</dt>
+                <dd className="font-semibold">
+                  {userById.data?.firstName} {userById.data?.lastName}
+                </dd>
+              </div>
+              <div className="flex flex-col pt-3">
+                <dt className="mb-1 text-gray-500  dark:text-gray-400">
+                  เบอร์โทร
+                </dt>
+                <dd className="font-semibold">{userById.data?.phone}</dd>
+              </div>
+              <div className="flex flex-col pt-3">
+                <dt className="mb-1 text-gray-500  dark:text-gray-400">
+                  หมายเลขที่นั่ง
+                </dt>
+                <dd className="font-semibold">
+                  {userById.data?.seat?.seatNo || "กรุณารอผู้ดูแลเลือกที่นั่ง"}
+                </dd>
+              </div>
+            </dl>
+          </>
+        )}
+        <hr className="m-4 my-8 border-gray-300" />
+        <h3 className="text-lg mb-4">ผู้เข้าร่วมทั้งหมด</h3>
+        <form onSubmit={handleSubmit(handleQuery)} className="flex mb-4 gap-4">
+          <Input placeholder="ค้นหา" className="w-96" {...register("search")} />
+          <Select
+            {...register("sort")}
+            onChange={(ev) => {
+              setValue("sort", ev.target.value);
+              forceSubmit();
+            }}
           >
-            <Input
-              placeholder="ค้นหา"
-              className="w-96"
-              {...register("search")}
-            />
-            <Select
-              {...register("sort")}
-              onChange={(ev) => {
-                setValue("sort", ev.target.value);
-                forceSubmit();
-              }}
-            >
-              <option value="">เรียงลำดับ</option>
-              {sortOptions.map((sort) => (
-                <option key={sort.value} value={sort.value}>
-                  {sort.label}
-                </option>
-              ))}
-            </Select>
-            <input type="submit" className="hidden" />
-          </form>
-          <Table>
-            <TableHead>
-              <tr>
-                <TableCell head>ชื่อ</TableCell>
-                <TableCell head className="hidden lg:table-cell">
-                  ลงทะเบียนวันที่
+            <option value="">เรียงลำดับ</option>
+            {sortOptions.map((sort) => (
+              <option key={sort.value} value={sort.value}>
+                {sort.label}
+              </option>
+            ))}
+          </Select>
+          <input type="submit" className="hidden" />
+        </form>
+        <Table>
+          <TableHead>
+            <tr>
+              <TableCell head>ชื่อ</TableCell>
+              <TableCell head className="hidden lg:table-cell">
+                ลงทะเบียนวันที่
+              </TableCell>
+              {auth.isLoggedIn && (
+                <>
+                  <TableCell head className="hidden lg:table-cell">
+                    เบอร์โทร
+                  </TableCell>
+                  <TableCell head className="hidden lg:table-cell">
+                    หมายเลขที่นั่ง
+                  </TableCell>
+                  <TableCell head></TableCell>
+                </>
+              )}
+            </tr>
+          </TableHead>
+          <tbody>
+            {users.data?.map((user, index) => (
+              <tr key={index}>
+                <TableCell>
+                  <span className="font-medium text-black">
+                    {user.firstName} {user.lastName}
+                  </span>
+                  {auth.isLoggedIn && (
+                    <div className="lg:hidden text-xs">
+                      {user.phone}{" "}
+                      {user.seat?.seatNo && <Badge>{user.seat?.seatNo}</Badge>}
+                    </div>
+                  )}
                 </TableCell>
-                {auth.user.isAdmin && (
+                <TableCell className="hidden lg:table-cell">
+                  {new Date(user.created!).toLocaleString([], {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </TableCell>
+                {auth.isLoggedIn && (
                   <>
-                    <TableCell head className="hidden lg:table-cell">
-                      เบอร์โทร
+                    <TableCell className="hidden lg:table-cell">
+                      {user.phone}
                     </TableCell>
-                    <TableCell head className="hidden lg:table-cell">
-                      หมายเลขที่นั่ง
+                    <TableCell className="hidden lg:table-cell">
+                      {user.seat?.seatNo && <Badge>{user.seat?.seatNo}</Badge>}
                     </TableCell>
-                    <TableCell head></TableCell>
+                    <TableCell>
+                      {user.seat ? (
+                        <button
+                          className="underline text-black cursor-pointer"
+                          onClick={() => handleReturnSeat(user.seat!._id)}
+                        >
+                          คืนที่นั่ง
+                        </button>
+                      ) : (
+                        <button
+                          className="underline text-black cursor-pointer"
+                          onClick={() => setSelectedUser(user)}
+                        >
+                          เลือกที่นั่ง
+                        </button>
+                      )}
+                    </TableCell>
                   </>
                 )}
               </tr>
-            </TableHead>
-            <tbody>
-              {users.data?.map((user, index) => (
-                <tr key={index}>
-                  <TableCell>
-                    <span className="font-medium text-black">
-                      {user.firstName} {user.lastName}
-                    </span>
-                    {auth.user?.isAdmin && (
-                      <div className="lg:hidden text-xs">
-                        {user.phone}{" "}
-                        {user.seat?.seatNo && (
-                          <Badge>{user.seat?.seatNo}</Badge>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {new Date(user.created!).toLocaleString([], {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </TableCell>
-                  {auth.user?.isAdmin && (
-                    <>
-                      <TableCell className="hidden lg:table-cell">
-                        {user.phone}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {user.seat?.seatNo && (
-                          <Badge>{user.seat?.seatNo}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {user.seat ? (
-                          <button
-                            className="underline text-black cursor-pointer"
-                            onClick={() => handleReturnSeat(user.seat!._id)}
-                          >
-                            คืนที่นั่ง
-                          </button>
-                        ) : (
-                          <button
-                            className="underline text-black cursor-pointer"
-                            onClick={() => setSelectedUser(user)}
-                          >
-                            เลือกที่นั่ง
-                          </button>
-                        )}
-                      </TableCell>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <div className="flex justify-end items-center gap-4 pb-4">
-            <div>จำนวนต่อหน้า</div>
-            <Select
-              className="w-20 py-2"
-              {...register("limit")}
-              onChange={(ev) => {
-                setValue("limit", ev.target.value);
-                forceSubmit();
-              }}
+            ))}
+          </tbody>
+        </Table>
+        <div className="flex justify-end items-center gap-4 pb-4">
+          <div>จำนวนต่อหน้า</div>
+          <Select
+            className="w-20 py-2"
+            {...register("limit")}
+            onChange={(ev) => {
+              setValue("limit", ev.target.value);
+              forceSubmit();
+            }}
+          >
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </Select>
+          <div className="flex">
+            <Button
+              variant="light"
+              className="flex justify-center items-center text-xs rounded-r-none"
+              onClick={prePage}
+              disabled={!canGoPrevPage}
             >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </Select>
-            <div className="flex">
-              <Button
-                variant="light"
-                className="flex justify-center items-center text-xs rounded-r-none"
-                onClick={prePage}
-                disabled={!canGoPrevPage}
-              >
-                ก่อนหน้า
-              </Button>
-              <Button
-                variant="light"
-                className="text-xs rounded-l-none"
-                onClick={nextPage}
-                disabled={!canGoNextPage}
-              >
-                ถัดไป
-              </Button>
-            </div>
+              ก่อนหน้า
+            </Button>
+            <Button
+              variant="light"
+              className="text-xs rounded-l-none"
+              onClick={nextPage}
+              disabled={!canGoNextPage}
+            >
+              ถัดไป
+            </Button>
           </div>
-        </main>
-      )}
-      {!auth.user && <PhoneSearchForm />}
+        </div>
+      </div>
       {selectedUser && (
         <SelectSeatForUser
           user={selectedUser}

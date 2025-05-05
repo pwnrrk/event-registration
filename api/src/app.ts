@@ -8,14 +8,19 @@ import indexRoute from "./routes";
 import userRoute from "./routes/userRoutes";
 import seatRoute from "./routes/seatRoutes";
 import { createDefaultSeats } from "./repositories/seatRepository";
+import { addFirstAdmin } from "./repositories/adminRepository";
+import authRoute from "./routes/authRoutes";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded());
 app.use(morgan("dev"));
 
 indexRoute.use("/users", userRoute);
 indexRoute.use("/seats", seatRoute);
+indexRoute.use("/auth", authRoute);
 
 app.use("/api", indexRoute);
 app.use(indexRoute);
@@ -42,7 +47,8 @@ const server = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 connectToDatabase()
-  // .then(() => createDefaultSeats())
+  .then(() => createDefaultSeats())
+  .then(() => addFirstAdmin())
   .then(() => {
     server.listen(PORT);
     server.on("listening", function () {
