@@ -1,7 +1,7 @@
 import { Request } from "express";
-import { SortOrder } from "mongoose";
+import { QueryOptions, SortOrder } from "mongoose";
 
-export interface FindOptions {
+export interface FindOptions extends QueryOptions {
   search?: string;
   sort?: Record<string, SortOrder>;
   limit?: number;

@@ -1,9 +1,9 @@
 import createHttpError from "http-errors";
+import { Document } from "mongoose";
 import { FindOptions } from "../libs/findOptions";
 import Seat, { ISeat } from "../models/seat";
-import { getUserById } from "./userRepository";
-import { Document, Types } from "mongoose";
 import { IUser } from "../models/user";
+import { getUserById } from "./userRepository";
 
 export async function getSeats({ sort, limit, skip }: FindOptions) {
   const query: any = {};
@@ -20,14 +20,6 @@ export async function getSeatById(id: string) {
   const seat = await Seat.findById(id).populate("user");
   if (!seat) throw createHttpError(404, { message: "Seat not found" });
   return seat;
-}
-
-export async function getEmptySeats() {
-  const seats = await Seat.find({
-    user: null,
-  });
-
-  return seats;
 }
 
 export async function createSeat(input: ISeat) {
@@ -88,4 +80,12 @@ export async function createDefaultSeats() {
       });
     }
   }
+}
+
+export async function countSeats({ user }: FindOptions) {
+  const query: any = {};
+
+  if (user) query.user = user;
+
+  return Seat.countDocuments();
 }

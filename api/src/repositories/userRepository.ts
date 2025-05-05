@@ -28,6 +28,23 @@ export async function getUsers({
   return users;
 }
 
+export async function countUsers({
+  search,
+  phone,
+}: FindOptions & { phone?: string }) {
+  const query: any = {};
+  if (search) {
+    query.$or = [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  if (phone) query.phone = phone;
+  return User.countDocuments(query);
+}
+
 export async function getUserById(id: string) {
   const user = await User.findById(id).populate("seat");
   if (!user) throw createHttpError(404, { message: "User not found" });
