@@ -1,0 +1,226 @@
+{
+	"info": {
+		"_postman_id": "fdcf0419-6a86-4992-b451-98ded433a586",
+		"name": "Event Registration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13322395"
+	},
+	"item": [
+		{
+			"name": "Get all users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "phuwanat",
+							"disabled": true
+						},
+						{
+							"key": "sort",
+							"value": "seat:asc",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}",
+					"host": [
+						"{{base_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"phone\": \"{{$randomPhoneNumber}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all seats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/seats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"seats"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "seatNo:asc",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create seat",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"seatNo\": \"2A\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/seats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"seats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Assign Seat",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/seats/68165234cbd7526fec978c66/user/6816c8fa79dc8b6d8f132742",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"seats",
+						"68165234cbd7526fec978c66",
+						"user",
+						"6816c8fa79dc8b6d8f132742"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user by Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/6816c8fa79dc8b6d8f132742",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"6816c8fa79dc8b6d8f132742"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove user from seat",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/seats/68165234cbd7526fec978c66/user",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"seats",
+						"68165234cbd7526fec978c66",
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "localhost:3000",
+			"type": "string"
+		}
+	]
+}
