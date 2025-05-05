@@ -6,6 +6,7 @@ export interface SeatContextValue {
   total: number;
   available: number;
   isLoading: boolean;
+  refetch(): void;
 }
 
 export const SeatContext = createContext<SeatContextValue>({
@@ -13,6 +14,9 @@ export const SeatContext = createContext<SeatContextValue>({
   total: 0,
   available: 0,
   isLoading: false,
+  refetch: function (): void {
+    throw new Error("Function not implemented.");
+  },
 });
 
 export function useSeatContext() {

@@ -1,14 +1,14 @@
 import { createContext, useContext } from "react";
 import { User } from "../interfaces/user";
 
-export interface UserContextValue {
+export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isLoggedIn: boolean;
   login(phone: string): Promise<boolean>;
 }
 
-export const UserContext = createContext<UserContextValue>({
+export const AuthContext = createContext<AuthContextValue>({
   user: null,
   isLoading: false,
   isLoggedIn: false,
@@ -17,6 +17,6 @@ export const UserContext = createContext<UserContextValue>({
   },
 });
 
-export function useUserContext() {
-  return useContext(UserContext);
+export function useAuthContext() {
+  return useContext(AuthContext);
 }

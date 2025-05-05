@@ -8,7 +8,7 @@ export async function getUsers({
   limit,
   skip,
   phone,
-}: FindOptions & { phone?: string }): Promise<IUser[]> {
+}: FindOptions & { phone?: string }) {
   const query: any = {};
   if (search) {
     query.$or = [
@@ -20,7 +20,7 @@ export async function getUsers({
 
   if (phone) query.phone = phone;
 
-  const users = User.find({ ...query });
+  const users = User.find({ ...query }).populate("seat");
   if (sort) users.sort(sort);
   if (limit) users.limit(limit);
   if (skip) users.skip(skip);
@@ -29,12 +29,12 @@ export async function getUsers({
 }
 
 export async function getUserById(id: string) {
-  const user = await User.findById(id);
-  if (!user) throw createHttpError(404);
+  const user = await User.findById(id).populate("seat");
+  if (!user) throw createHttpError(404, { message: "User not found" });
   return user;
 }
 
-export async function createUser(input: IUser): Promise<IUser> {
+export async function createUser(input: IUser) {
   input.created = new Date();
   input.updated = input.created;
   const newUser = await User.create(input);

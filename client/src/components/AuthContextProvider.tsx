@@ -1,10 +1,10 @@
 import { PropsWithChildren, useState } from "react";
-import { UserContext } from "../contexts/UserContext";
+import { AuthContext } from "../contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "../interfaces/user";
 import { getUserById, getUsers } from "../services/userService";
 
-export default function UserContextProvider({ children }: PropsWithChildren) {
+export default function AuthContextProvider({ children }: PropsWithChildren) {
   const [userId, setUserId] = useState<string | null>(null);
   const { data, isLoading } = useQuery<User | null>({
     queryKey: ["users", userId],
@@ -19,7 +19,7 @@ export default function UserContextProvider({ children }: PropsWithChildren) {
   }
 
   return (
-    <UserContext.Provider
+    <AuthContext.Provider
       value={{
         user: data || null,
         isLoading,
@@ -28,6 +28,6 @@ export default function UserContextProvider({ children }: PropsWithChildren) {
       }}
     >
       {children}
-    </UserContext.Provider>
+    </AuthContext.Provider>
   );
 }

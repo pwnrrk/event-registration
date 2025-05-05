@@ -1,10 +1,12 @@
-import { model, Model, models, Schema } from "mongoose";
+import { model, Model, models, Schema, Types } from "mongoose";
+import { ISeat } from "./seat";
 
 export interface IUser {
   firstName: string;
   lastName: string;
   phone: string;
   isAdmin?: boolean;
+  seat?: Types.ObjectId | ISeat;
   created?: Date;
   updated?: Date;
 }
@@ -14,6 +16,7 @@ const UserSchema = new Schema<IUser>({
   lastName: String,
   phone: String,
   isAdmin: Boolean,
+  seat: { type: Schema.Types.ObjectId, ref: "Seat" },
   created: Date,
   updated: Date,
 });

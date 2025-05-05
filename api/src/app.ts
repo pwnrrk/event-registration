@@ -32,7 +32,7 @@ app.use(function (
 ) {
   let status = err.status || 500;
   let message = err.message || "Internal Server Error";
-
+  console.trace(err);
   res
     .status(status)
     .json(process.env.NODE_ENV === "production" ? { message } : err);

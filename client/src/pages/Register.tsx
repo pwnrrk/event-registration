@@ -7,7 +7,7 @@ import { User } from "../interfaces/user";
 import { createUser } from "../services/userService";
 import Spinner from "../components/Spinner";
 import { useState } from "react";
-import { useUserContext } from "../contexts/UserContext";
+import { useUserContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {

@@ -1,18 +1,16 @@
-import { model, Model, models, Schema } from "mongoose";
-import User, { IUser } from "./user";
+import { model, Model, models, Schema, Types } from "mongoose";
+import { IUser } from "./user";
 
 export interface ISeat {
   seatNo: string;
-  userId?: string;
-  user?: IUser;
+  user?: Types.ObjectId | IUser;
   created?: Date;
   updated?: Date;
 }
 
 const SeatSchema = new Schema({
   seatNo: String,
-  userId: String,
-  user: Object,
+  user: { type: Schema.Types.ObjectId, ref: "User" },
   created: Date,
   updated: Date,
 });

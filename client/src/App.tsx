@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import UserContextProvider from "./components/UserContextProvider";
+import AuthContextProvider from "./components/AuthContextProvider";
 import SeatContextProvider from "./components/SeatContextProvider";
 
 const Landing = lazy(() => import("./pages/Landing"));
@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <UserContextProvider>
+      <AuthContextProvider>
         <SeatContextProvider>
           <BrowserRouter>
             <Suspense>
@@ -27,7 +27,7 @@ export default function App() {
             </Suspense>
           </BrowserRouter>
         </SeatContextProvider>
-      </UserContextProvider>
+      </AuthContextProvider>
     </QueryClientProvider>
   );
 }

@@ -23,6 +23,7 @@ export default function SeatContextProvider({ children }: PropsWithChildren) {
         isLoading,
         total: info.data?.totalSeat || 0,
         available: info.data?.available || 0,
+        refetch: info.refetch,
       }}
     >
       {children}
