@@ -36,7 +36,9 @@ function PhoneSearchForm() {
     const users = await getUsers({ phone: data.phone });
     setLoading(false);
     if (!users || users.length === 0) {
-      return setNotFound(true);
+      setNotFound(true);
+      navigate(`?u=`);
+      return;
     }
     navigate(`?u=${users[0]._id}`);
   }
@@ -110,7 +112,7 @@ function SelectSeatForUser({
   return (
     <Dialog open={user !== undefined} onClose={onClose}>
       <div className="fixed inset-0 flex w-screen items-center justify-center p-4 bg-black/10">
-        <DialogPanel className="max-w-lg w-full space-y-4 border border-gray-300 rounded-2xl shadow-2xl bg-white p-4">
+        <DialogPanel className="max-w-md w-full space-y-4 rounded-2xl shadow-sm dark:bg-gray-800 dark:border dark:border-gray-500 bg-white p-4">
           <DialogTitle className="font-bold">เลือกที่นั่ง</DialogTitle>
           <form
             id="seat-select"
@@ -286,14 +288,14 @@ export default function Status() {
     <>
       <div className="max-w-screen-lg mx-auto p-4">
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="shadow border border-gray-300 rounded-2xl p-4">
-            <div className="text-xl text-gray-500 font-semibold">
+          <div className="shadow border border-gray-300 dark:border-gray-500 dark:bg-gray-800 rounded-2xl p-4">
+            <div className="text-xl text-gray-500 dark:text-gray-300 font-semibold">
               ผู้เข้าร่วม
             </div>
             <div className="text-4xl">{appContext.totalUser}</div>
           </div>
-          <div className="shadow border border-gray-300 rounded-2xl p-4">
-            <div className="text-xl text-gray-500 font-semibold">
+          <div className="shadow border border-gray-300 dark:border-gray-500 rounded-2xl p-4 dark:bg-gray-800">
+            <div className="text-xl text-gray-500 dark:text-gray-300 font-semibold">
               จำนวนที่นั่ง
             </div>
             <div className="text-4xl">
@@ -318,6 +320,17 @@ export default function Status() {
                   เบอร์โทร
                 </dt>
                 <dd className="font-semibold">{userById.data?.phone}</dd>
+              </div>
+              <div className="flex flex-col pt-3">
+                <dt className="mb-1 text-gray-500  dark:text-gray-400">
+                  วันที่ลงทะเบียน
+                </dt>
+                <dd className="font-semibold">
+                  {userById.data?.created &&
+                    new Date(userById.data.created).toLocaleDateString([], {
+                      dateStyle: "medium",
+                    })}
+                </dd>
               </div>
               <div className="flex flex-col pt-3">
                 <dt className="mb-1 text-gray-500  dark:text-gray-400">
@@ -374,7 +387,7 @@ export default function Status() {
             {users.data?.map((user, index) => (
               <tr key={index}>
                 <TableCell>
-                  <span className="font-medium text-black">
+                  <span className="font-medium text-black dark:text-white">
                     {user.firstName} {user.lastName}
                   </span>
                   {auth.isLoggedIn && (
@@ -401,14 +414,14 @@ export default function Status() {
                     <TableCell>
                       {user.seat ? (
                         <button
-                          className="underline text-black cursor-pointer"
+                          className="underline text-black dark:text-white cursor-pointer"
                           onClick={() => handleReturnSeat(user.seat!._id)}
                         >
                           คืนที่นั่ง
                         </button>
                       ) : (
                         <button
-                          className="underline text-black cursor-pointer"
+                          className="underline text-black dark:text-white cursor-pointer"
                           onClick={() => setSelectedUser(user)}
                         >
                           เลือกที่นั่ง

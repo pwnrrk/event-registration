@@ -29,9 +29,9 @@ export default function AppBar() {
   if (location.pathname === "/register") return <></>;
 
   return (
-    <nav className="py-4.5 px-4 bg-blue-600 text-white">
+    <nav className="py-4.5 px-4 bg-blue-600 text-white dark:bg-gray-800 dark:border-b border-b-gray-500">
       <div className="max-w-screen-lg mx-auto flex items-center gap-4">
-        <Link to="/" className="text-2xl font-bold">
+        <Link to="/" className="text-xl lg:text-2xl font-bold">
           Event Registration
         </Link>
         <div className="flex-1"></div>
@@ -49,8 +49,8 @@ export default function AppBar() {
         )}
       </div>
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <div className="fixed inset-0 flex w-screen items-center justify-center p-4 bg-black/10">
-          <DialogPanel className="max-w-md w-full space-y-4 border border-gray-300 rounded-2xl shadow-2xl bg-white p-4">
+        <div className="fixed inset-0 flex w-screen items-center justify-center p-4 bg-black/10 dark:bg-black/30">
+          <DialogPanel className="max-w-md w-full space-y-4 rounded-2xl shadow-sm dark:bg-gray-800 dark:border dark:border-gray-500 bg-white p-4">
             <DialogTitle className="font-bold">เข้าสู่ระบบผู้ดูแล</DialogTitle>
             <form
               id="login"
