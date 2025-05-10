@@ -57,3 +57,9 @@ export async function createUser(input: IUser) {
   const newUser = await User.create(input);
   return newUser;
 }
+
+export async function deleteUser(id: any) {
+  const user = await getUserById(id);
+  await user.deleteOne();
+  return { message: "User deleted successfully" };
+}

@@ -4,6 +4,7 @@ import { getFindOptions } from "../libs/findOptions";
 import { IUser } from "../models/user";
 import {
   createUser,
+  deleteUser,
   getUserById,
   getUsers,
 } from "../repositories/userRepository";
@@ -34,4 +35,9 @@ export async function create(req: Request, res: Response) {
 export async function find(req: Request, res: Response) {
   const user = await getUserById(req.params.id);
   res.json(user);
+}
+
+export async function destroy(req: Request, res: Response) {
+  const result = await deleteUser(req.params.id);
+  res.json(result);
 }
