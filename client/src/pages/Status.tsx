@@ -52,7 +52,7 @@ function PhoneSearchForm() {
           onSubmit={handleSubmit(onSubmit)}
         >
           <Input
-            placeholder="ใส่เบอร์โทรศัพท์ที่ลงเบียนไว้"
+            placeholder="ใส่เบอร์โทรศัพท์ที่ลงทะเบียนไว้"
             required
             {...register("phone")}
             className="w-full"
@@ -346,7 +346,11 @@ export default function Status() {
         <hr className="m-4 my-8 border-gray-300" />
         <h3 className="text-lg mb-4">ผู้เข้าร่วมทั้งหมด</h3>
         <form onSubmit={handleSubmit(handleQuery)} className="flex mb-4 gap-4">
-          <Input placeholder="ค้นหา" className="w-96" {...register("search")} />
+          <Input
+            placeholder="ค้นหา"
+            className="w-full max-w-56"
+            {...register("search")}
+          />
           <Select
             {...register("sort")}
             onChange={(ev) => {
